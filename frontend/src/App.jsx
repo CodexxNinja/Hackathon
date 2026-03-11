@@ -1,17 +1,16 @@
 import { Route, BrowserRouter as Router, Routes, useNavigate } from "react-router-dom";
 import AdminDashboard from "./pages/AdminDashboard";
 import LoginPage from "./pages/LoginPage";
+import VisitorForm from "./pages/VisitorForm";
 
 function LoginWrapper() {
   const navigate = useNavigate();
   
   const handleLogin = (isAdmin) => {
-    // In a real app, you'd handle authentication here
     if (isAdmin) {
       navigate("/admin");
     } else {
-      // User login - redirect to user dashboard or visitor page
-      alert("User login successful! (User dashboard coming soon)");
+      navigate("/visitor");
     }
   };
 
@@ -24,6 +23,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginWrapper />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/visitor" element={<VisitorForm />} />
       </Routes>
     </Router>
   );
