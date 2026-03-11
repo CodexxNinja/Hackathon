@@ -123,7 +123,6 @@ const LIGHT = {
   toggleBg: "#ffffff", toggleBorder: "rgba(59,130,246,0.28)",
 };
 
-
 export default function VisitorForm() {
   const navigate = useNavigate();
   const [dark, setDark] = useState(true);
@@ -194,13 +193,31 @@ const [stage, setStage] = useState(1);
     if (score >= 3) setTimeout(() => go(4), 1200);
   };
   const sendOTP = () => { const g = genOTP(); setOtp(g); setOtpSent(true); alert(`📱 OTP (Demo): ${g}`); };
-  const verifyOTP = () => {
-    if (otpInput.join("") === otp) {
-      setOtpVerified(true);
-      setQrValue(JSON.stringify({ id: form.visitorId, email: loginData.email, dept: selectedDept, date: form.visitDate, status: "Approved" }));
-      setTimeout(() => go(5), 800);
-    } else alert("Incorrect OTP. Try again.");
-  };
+  const verifyOTP = async () => {
+
+  if (otpInput.join("") === otp) {
+
+    setOtpVerified(true);
+
+    const qrData = JSON.stringify({
+      id: form.visitorId,
+      company: form.company,
+      department: selectedDept,
+      visitDate: form.visitDate,
+      status: "Approved"
+    });
+
+    setQrValue(qrData);
+
+    // ⭐ SAVE DATA TO DATABASE
+    await saveVisitorToDB(qrData);
+
+    setTimeout(() => go(5), 800);
+
+  } else {
+    alert("Incorrect OTP. Try again.");
+  }
+};
 const resetAll = () => {
     setStage(1);
     setForm({ visitorId: genVisitorId(), company: "", phone: "", hostEmployee: "", visitDate: "", purpose: "", status: "Pending", checkIn: "", checkOut: "", photo: null });
@@ -208,6 +225,39 @@ const resetAll = () => {
     setQuizAnswers({}); setQuizSubmitted(false); setOtpSent(false); setOtpVerified(false); setOtpInput(["","","","","",""]);
     go(1);
   };
+
+  // SAVE VISITOR DATA TO FLASK → MONGODB ATLAS
+const saveVisitorToDB = async (qrData) => {
+  try {
+
+    const response = await fetch("http://localhost:5000/save-visitor", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        visitorId: form.visitorId,
+        company: form.company,
+        phone: form.phone,
+        hostEmployee: form.hostEmployee,
+        visitDate: form.visitDate,
+        checkIn: form.checkIn,
+        checkOut: form.checkOut,
+        purpose: form.purpose,
+        department: dept?.name,
+        quizScore: quizScore,
+        qrCode: qrData,
+        photo: form.photo   // ⭐ THIS LINE FIXES YOUR ISSUE
+      }),
+    });
+
+    const data = await response.json();
+    console.log("Visitor saved:", data);
+
+  } catch (error) {
+    console.error("Error saving visitor:", error);
+  }
+};
 
   const dept = DEPARTMENTS.find(d => d.id === selectedDept);
   const stageNames = ["Personal Info", "Safety Training", "Safety Quiz", "OTP & Submit"];
@@ -571,6 +621,7 @@ const resetAll = () => {
             )}
           </div>
         )}
+
 
         {/* ══ STAGE 5 — QR Pass ══ */}
         {stage === 5 && (
