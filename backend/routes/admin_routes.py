@@ -1,10 +1,13 @@
 from flask import Blueprint, request, jsonify
 from controllers.admin_controller import AdminController
+# IMPORT the security guard
+from utils.auth_middleware import login_required 
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
 admin_controller = AdminController()
 
 @admin_bp.route('/dashboard', methods=['GET'])
+@login_required  # <--- LOCK ADDED
 def get_dashboard():
     """Get admin dashboard with statistics"""
     try:
@@ -14,6 +17,7 @@ def get_dashboard():
         return jsonify({'error': str(e)}), 400
 
 @admin_bp.route('/reports', methods=['GET'])
+@login_required  # <--- LOCK ADDED
 def get_reports():
     """Get admin reports"""
     try:
@@ -24,6 +28,7 @@ def get_reports():
         return jsonify({'error': str(e)}), 400
 
 @admin_bp.route('/visitors', methods=['GET'])
+@login_required  # <--- LOCK ADDED
 def get_visitors():
     """Get all visitors"""
     try:
@@ -34,6 +39,7 @@ def get_visitors():
         return jsonify({'error': str(e)}), 400
 
 @admin_bp.route('/visitors/<visitor_id>', methods=['GET'])
+@login_required  # <--- LOCK ADDED
 def get_visitor_details(visitor_id):
     """Get detailed information about a visitor"""
     try:
@@ -43,6 +49,7 @@ def get_visitor_details(visitor_id):
         return jsonify({'error': str(e)}), 404
 
 @admin_bp.route('/audit-logs', methods=['GET'])
+@login_required  # <--- LOCK ADDED
 def get_audit_logs():
     """Get audit logs"""
     try:

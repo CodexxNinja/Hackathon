@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Added for navigation
 
 const floatingOrbs = [
   { size: 300, x: 10, y: 15, color: "#a78bfa", delay: 0 },
@@ -363,7 +364,7 @@ function StrengthBar({ password }) {
   const colors = ["", "#ef4444", "#fb923c", "#facc15", "#34d399"];
   return (
     <div className="strength-wrap">
-      {[1,2,3,4].map(i => (
+      {[1, 2, 3, 4].map(i => (
         <div key={i} className="strength-seg" style={{ background: i <= score ? colors[score] : undefined }} />
       ))}
     </div>
@@ -377,6 +378,7 @@ export default function LoginPage({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [remember, setRemember] = useState(false);
+  const navigate = useNavigate(); // Hook for navigation
 
   const isAdmin = mode === "admin";
 
@@ -385,16 +387,45 @@ export default function LoginPage({ onLogin }) {
     setForm({ email: "", password: "", adminId: "" });
   };
 
-  const handleSubmit = () => {
+  // REAL AUTHENTICATION LOGIC INTEGRATED HERE
+  const handleSubmit = async () => {
     setLoading(true);
-    setTimeout(() => { 
-      setLoading(false); 
-      setSuccess(true);
-      // Call onLogin callback if provided
-      if (onLogin) {
-        setTimeout(() => onLogin(isAdmin), 800);
+    try {
+      // 1. Send data to Flask Backend
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          adminId: form.adminId // Included if you want to verify this too
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // 2. SUCCESS: Show UI animation
+        setLoading(false);
+        setSuccess(true);
+
+        // 3. Store the secure token for the middleware to see later
+        localStorage.setItem('adminToken', data.token);
+
+        // 4. Wait for the animation before switching pages
+        setTimeout(() => {
+          if (onLogin) onLogin(isAdmin);
+          navigate(isAdmin ? '/admin/' : '/user/dashboard');
+        }, 1500);
+      } else {
+        // 5. FAILURE: Display the error message from MongoDB
+        setLoading(false);
+        alert(data.error || "Authentication Failed");
       }
-    }, 1500);
+    } catch (err) {
+      setLoading(false);
+      alert("Cannot connect to server. Ensure your Flask backend is running on port 5000.");
+    }
   };
 
   useEffect(() => { setSuccess(false); }, [mode]);
@@ -404,7 +435,7 @@ export default function LoginPage({ onLogin }) {
       <style>{getStyles(dark)}</style>
       <div className="login-root">
 
-        {/* ── Theme Toggle Button ── */}
+        {/* Theme Toggle Button */}
         <div className="theme-toggle">
           <button className="theme-btn theme-btn-dark" onClick={() => setDark(true)}>
             🌙 Dark
@@ -534,4 +565,3 @@ export default function LoginPage({ onLogin }) {
     </>
   );
 }
-
