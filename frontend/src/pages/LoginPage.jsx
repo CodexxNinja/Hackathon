@@ -370,7 +370,7 @@ function StrengthBar({ password }) {
   );
 }
 
-export default function LoginPage() {
+export default function LoginPage({ onLogin }) {
   const [dark, setDark] = useState(true);
   const [mode, setMode] = useState("user");
   const [form, setForm] = useState({ email: "", password: "", adminId: "" });
@@ -387,7 +387,14 @@ export default function LoginPage() {
 
   const handleSubmit = () => {
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSuccess(true); }, 1500);
+    setTimeout(() => { 
+      setLoading(false); 
+      setSuccess(true);
+      // Call onLogin callback if provided
+      if (onLogin) {
+        setTimeout(() => onLogin(isAdmin), 800);
+      }
+    }, 1500);
   };
 
   useEffect(() => { setSuccess(false); }, [mode]);
