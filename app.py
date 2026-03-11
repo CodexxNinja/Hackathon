@@ -1,16 +1,12 @@
-from flask import Flask, render_template, request
+from flask import Flask, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
-@app.route('/')
-def home():
-    return render_template('login.jsx')
+@app.route("/api/message")
+def message():
+    return jsonify({"message": "Hello from Flask backend!"})
 
-@app.route('/greet', methods=['POST'])
-def greet():
-    # This gets the 'username' from the form input
-    name = request.form.get('username')
-    return render_template('greet.html', user_name=name)
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+if __name__ == "__main__":
+    app.run(debug=True)
