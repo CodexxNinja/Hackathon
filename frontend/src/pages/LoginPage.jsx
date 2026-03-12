@@ -544,7 +544,7 @@ function VerificationPage({ dark, email, onBack }) {
           <span className="verify-email-tag">{email}</span>
 
           {wrongOtp && (
-            <div className="error-msg">⚠️ Incorrect code. Please try again.</div>
+            <div className="error-msg">Incorrect code. Please try again.</div>
           )}
 
           <div className="otp-row">
@@ -700,10 +700,6 @@ export default function LoginPage({ onLogin }) {
               </button>
             </div>
 
-            {/* SSL badge */}
-            <div style={{ textAlign: "center" }}>
-              <span className="secure-badge"><span className="dot-green" />256-bit SSL Encrypted</span>
-            </div>
 
             {/* Header */}
             <div className="header" key={mode}>
