@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// ── Theme tokens (mirrors VisitorForm) ────────────────────────────────────
+
 const DARK = {
   bg: "#070d1a", surface: "#0d1628", surface2: "#111f36", surface3: "#0a1221",
   border: "rgba(148,163,184,0.10)", accent: "#38bdf8", accent2: "#818cf8",
@@ -33,7 +33,6 @@ const STATUS_META = {
   Rejected: { color: "#f87171", bg: "#f8717118", label: "Rejected" },
 };
 
-// ── Mock data (replace with real fetch from /get-visitors) ────────────────
 const MOCK_VISITORS = [
   { _id:"1", visitorId:"VIS-A1B2C3", company:"TechCorp Ltd.",     hostEmployee:"Rajesh Kumar",  visitDate:"2025-07-18", checkIn:"09:00", checkOut:"17:00", department:"chemical",   purpose:"Audit & Inspection",        quizScore:4, status:"Approved", phone:"+91 98765 43210" },
   { _id:"2", visitorId:"VIS-D4E5F6", company:"GreenBuild Inc.",   hostEmployee:"Priya Sharma",  visitDate:"2025-07-18", checkIn:"10:30", checkOut:"15:00", department:"mechanical", purpose:"Equipment Commissioning",    quizScore:3, status:"Approved", phone:"+91 87654 32109" },
@@ -45,7 +44,6 @@ const MOCK_VISITORS = [
   { _id:"8", visitorId:"VIS-V4W5X6", company:"ElectroPower",      hostEmployee:"Anita Desai",   visitDate:"2025-07-21", checkIn:"09:30", checkOut:"14:30", department:"electrical", purpose:"Circuit Testing",            quizScore:3, status:"Approved", phone:"+91 21098 76543" },
 ];
 
-// ── Mini spark line ───────────────────────────────────────────────────────
 const SparkLine = ({ data, color, width = 80, height = 32 }) => {
   const max = Math.max(...data), min = Math.min(...data);
   const pts = data.map((v, i) => {
@@ -66,7 +64,6 @@ const SparkLine = ({ data, color, width = 80, height = 32 }) => {
   );
 };
 
-// ── Donut chart ───────────────────────────────────────────────────────────
 const DonutChart = ({ slices, size = 120, stroke = 22 }) => {
   const r = (size - stroke) / 2, cx = size / 2, cy = size / 2;
   const circ = 2 * Math.PI * r;
@@ -93,7 +90,6 @@ const DonutChart = ({ slices, size = 120, stroke = 22 }) => {
   );
 };
 
-// ── Badge ─────────────────────────────────────────────────────────────────
 const Badge = ({ status }) => {
   const m = STATUS_META[status] || STATUS_META.Pending;
   return (
@@ -103,7 +99,6 @@ const Badge = ({ status }) => {
   );
 };
 
-// ── Score pill ────────────────────────────────────────────────────────────
 const ScorePill = ({ score, T }) => {
   const color = score >= 3 ? T.success : T.error;
   return (
@@ -113,7 +108,6 @@ const ScorePill = ({ score, T }) => {
   );
 };
 
-// ── Stat card ─────────────────────────────────────────────────────────────
 const StatCard = ({ label, value, sub, icon, color, spark, T }) => (
   <div style={{ background: T.surface, border: `1px solid ${T.cardBorder}`, borderRadius: 18, padding: "22px 24px", boxShadow: T.shadow, display: "flex", flexDirection: "column", gap: 4, position: "relative", overflow: "hidden" }}>
     <div style={{ position: "absolute", top: 0, right: 0, width: 80, height: 80, borderRadius: "50%", background: color + "0e", filter: "blur(30px)", pointerEvents: "none" }} />
@@ -128,7 +122,6 @@ const StatCard = ({ label, value, sub, icon, color, spark, T }) => (
   </div>
 );
 
-// ── Modal ─────────────────────────────────────────────────────────────────
 const Modal = ({ visitor, onClose, T, dark }) => {
   if (!visitor) return null;
   const dept = DEPT_META[visitor.department] || { color: T.accent, icon: "🏢", bg: T.accent + "18" };
@@ -146,12 +139,12 @@ const Modal = ({ visitor, onClose, T, dark }) => {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
           {[
-            { l: "Host Employee", v: visitor.hostEmployee, icon: "👨‍💼" },
-            { l: "Phone", v: visitor.phone, icon: "📱" },
-            { l: "Visit Date", v: visitor.visitDate, icon: "📅" },
-            { l: "Check-In", v: visitor.checkIn, icon: "🟢" },
-            { l: "Check-Out", v: visitor.checkOut, icon: "🔴" },
-            { l: "Purpose", v: visitor.purpose, icon: "🎯" },
+            { l: "Host Employee", v: visitor.hostEmployee },
+            { l: "Phone", v: visitor.phone},
+            { l: "Visit Date", v: visitor.visitDate },
+            { l: "Check-In", v: visitor.checkIn },
+            { l: "Check-Out", v: visitor.checkOut },
+            { l: "Purpose", v: visitor.purpose },
           ].map((r, i) => (
             <div key={i} style={{ background: T.surface2, borderRadius: 10, padding: "10px 12px", border: `1px solid ${T.border}` }}>
               <div style={{ fontSize: 10, color: T.muted, marginBottom: 3, fontWeight: 600 }}>{r.icon} {r.l}</div>
@@ -180,7 +173,6 @@ const Modal = ({ visitor, onClose, T, dark }) => {
   );
 };
 
-// ══════════════════════════════════════════════════════════════════════════
 export default function AdminDashboard() {
   const [dark, setDark] = useState(true);
   const T = dark ? DARK : LIGHT;
@@ -288,11 +280,10 @@ export default function AdminDashboard() {
       }}>
         {/* Logo */}
         <div style={{ padding: "24px 18px 20px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10, minHeight: 72 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${T.accent},${T.accent2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🏭</div>
           {sidebarOpen && (
             <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: T.text, lineHeight: 1.2 }}>VisitorPro</div>
-              <div style={{ fontSize: 10, color: T.muted, fontWeight: 500 }}>Admin Console</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: T.text, lineHeight: 1.2 }}>Admin</div>
+              <div style={{ fontSize: 10, color: T.muted, fontWeight: 500 }}>Dashboard</div>
             </div>
           )}
         </div>
@@ -372,18 +363,11 @@ export default function AdminDashboard() {
               {/* Filters */}
               <div style={{ background: T.surface, border: `1px solid ${T.cardBorder}`, borderRadius: 16, padding: "18px 22px", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", boxShadow: T.shadow }}>
                 <div style={{ position: "relative", flex: "1 1 200px" }}>
-                  <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, pointerEvents: "none" }}>🔍</span>
                   <input style={{ ...iS, paddingLeft: 36, width: "100%" }} placeholder="Search company, visitor ID, host…" value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
                 <select style={{ ...iS, flex: "0 0 auto", minWidth: 140 }} value={filterDept} onChange={e => setFilterDept(e.target.value)}>
                   <option value="all">All Departments</option>
                   {["chemical","food","electrical","mechanical"].map(d => <option key={d} value={d}>{DEPT_META[d].icon} {d}</option>)}
-                </select>
-                <select style={{ ...iS, flex: "0 0 auto", minWidth: 130 }} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-                  <option value="all">All Statuses</option>
-                  <option value="Approved">✅ Approved</option>
-                  <option value="Pending">⏳ Pending</option>
-                  <option value="Rejected">❌ Rejected</option>
                 </select>
                 <div style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>{filtered.length} result{filtered.length !== 1 ? "s" : ""}</div>
                 {(search || filterDept !== "all" || filterStatus !== "all") && (
@@ -469,10 +453,10 @@ export default function AdminDashboard() {
               <div style={{ background: T.surface, border: `1px solid ${T.cardBorder}`, borderRadius: 18, padding: "28px", boxShadow: T.shadow }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: T.text, marginBottom: 20 }}>System Settings</div>
                 {[
-                  { label: "Backend API URL",    value: "http://localhost:5000",          icon: "🔗" },
-                  { label: "Database",           value: "MongoDB Atlas — visitor_management", icon: "🗄️" },
-                  { label: "Auth Mode",          value: "JWT + OTP Verification",         icon: "🔐" },
-                  { label: "QR Expiry",          value: "Visit date only",                icon: "⏰" },
+                  { label: "Backend API URL",    value: "http://localhost:5000" },
+                  { label: "Database",           value: "MongoDB Atlas — visitor_management" },
+                  { label: "Auth Mode",          value: "JWT + OTP Verification"},
+                  { label: "QR Expiry",          value: "Visit date only" },
                 ].map((s, i) => (
                   <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: i < 3 ? `1px solid ${T.border}` : "none" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

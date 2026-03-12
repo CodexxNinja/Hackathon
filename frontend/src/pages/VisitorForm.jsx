@@ -192,7 +192,7 @@ const [stage, setStage] = useState(1);
     setQuizScore(score); setQuizSubmitted(true);
     if (score >= 3) setTimeout(() => go(4), 1200);
   };
-  const sendOTP = () => { const g = genOTP(); setOtp(g); setOtpSent(true); alert(`📱 OTP (Demo): ${g}`); };
+  const sendOTP = () => { const g = genOTP(); setOtp(g); setOtpSent(true); alert(`OTP (Demo): ${g}`); };
   const verifyOTP = async () => {
 
   if (otpInput.join("") === otp) {
@@ -317,7 +317,7 @@ const saveVisitorToDB = async (qrData) => {
         {/* Header */}
         <div style={{ textAlign:"center", marginBottom:28 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:10, background: dark ? "rgba(56,189,248,0.09)" : "rgba(2,132,199,0.07)", border:`1px solid ${T.accent}33`, borderRadius:40, padding:"6px 18px", marginBottom:12, transition:"background 0.3s" }}>
-            <span style={{ fontSize:18 }}>🏭</span>
+          
             <span style={{ fontSize:11, fontWeight:700, color:T.accent, letterSpacing:"0.12em", textTransform:"uppercase" }}>Smart Visitor Pre-Authorization</span>
           </div>
 
@@ -345,7 +345,7 @@ const saveVisitorToDB = async (qrData) => {
           <div style={card}>
             <div style={{ marginBottom:24 }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
-                <span style={{ background:`linear-gradient(135deg,${T.accent},${T.accent2})`, borderRadius:8, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>📝</span>
+
                 <h3 style={{ fontSize:20, fontWeight:800, margin:0, color:T.text }}>Personal Information</h3>
               </div>
               <p style={{ color:T.muted, fontSize:12, marginLeft:42 }}>Fill in your visitor details accurately</p>
@@ -353,38 +353,38 @@ const saveVisitorToDB = async (qrData) => {
 
             <div style={{ background: dark ? "rgba(56,189,248,0.07)" : "rgba(2,132,199,0.06)", border:`1.5px solid ${T.accent}33`, borderRadius:12, padding:"12px 16px", marginBottom:20, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               <div>
-                <div style={{ fontSize:10, color:T.muted, letterSpacing:"0.08em", fontWeight:600, textTransform:"uppercase" }}>🪪 Auto-generated Visitor ID</div>
+                <div style={{ fontSize:10, color:T.muted, letterSpacing:"0.08em", fontWeight:600, textTransform:"uppercase" }}>Auto-generated Visitor ID</div>
                 <div style={{ fontSize:17, fontFamily:"'JetBrains Mono',monospace", color:T.accent, fontWeight:700, marginTop:2 }}>{form.visitorId}</div>
               </div>
               <span style={{ background:T.success+"22", color:T.success, fontSize:10, fontWeight:700, padding:"4px 10px", borderRadius:20 }}>SYSTEM GENERATED</span>
             </div>
 
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 18px" }}>
-              <Field label="Company / Organization" icon="🏢" error={s1Errors.company} muted={T.muted}>
+              <Field label="Company / Organization" error={s1Errors.company} muted={T.muted}>
                 <input style={iS} placeholder="e.g. TechCorp Ltd." value={form.company} onChange={e => setForm(f => ({ ...f, company:e.target.value }))} />
               </Field>
-              <Field label="Phone Number" icon="📱" error={s1Errors.phone} muted={T.muted}>
+              <Field label="Phone Number" error={s1Errors.phone} muted={T.muted}>
                 <input style={iS} placeholder="+91 98765 43210" value={form.phone} onChange={e => setForm(f => ({ ...f, phone:e.target.value }))} />
               </Field>
-              <Field label="Host Employee Name" icon="👨‍💼" error={s1Errors.hostEmployee} muted={T.muted}>
+              <Field label="Host Employee Name"  error={s1Errors.hostEmployee} muted={T.muted}>
                 <input style={iS} placeholder="e.g. Rajesh Kumar" value={form.hostEmployee} onChange={e => setForm(f => ({ ...f, hostEmployee:e.target.value }))} />
               </Field>
-              <Field label="Visit Date" icon="📅" error={s1Errors.visitDate} muted={T.muted}>
+              <Field label="Visit Date"  error={s1Errors.visitDate} muted={T.muted}>
                 <input style={iS} type="date" value={form.visitDate} onChange={e => setForm(f => ({ ...f, visitDate:e.target.value }))} />
               </Field>
-              <Field label="Check-In Time" icon="🟢" error={s1Errors.checkIn} muted={T.muted}>
+              <Field label="Check-In Time"  error={s1Errors.checkIn} muted={T.muted}>
                 <input style={iS} type="time" value={form.checkIn} onChange={e => setForm(f => ({ ...f, checkIn:e.target.value }))} />
               </Field>
-              <Field label="Check-Out Time (Expected)" icon="🔴" muted={T.muted}>
+              <Field label="Check-Out Time (Expected)"  muted={T.muted}>
                 <input style={iS} type="time" value={form.checkOut} onChange={e => setForm(f => ({ ...f, checkOut:e.target.value }))} />
               </Field>
             </div>
 
-<Field label="Purpose of Visit" icon="🎯" error={s1Errors.purpose} muted={T.muted}>
+<Field label="Purpose of Visit"  error={s1Errors.purpose} muted={T.muted}>
               <textarea style={{ ...iS, height:72, resize:"none" }} placeholder="Describe the reason for your visit..." value={form.purpose} onChange={e => setForm(f => ({ ...f, purpose:e.target.value }))} />
             </Field>
 
-<Field label="Passport Photo" icon="📸" error={s1Errors.photo} muted={T.muted}>
+<Field label="Passport Photo"  error={s1Errors.photo} muted={T.muted}>
               <div style={{ display:"flex", gap:8, marginBottom:10 }}>
                 {["file","camera"].map(m => (
                   <button key={m} onClick={() => { setPhotoMode(m); if (m==="camera") startCamera(); else stopCamera(); }}
@@ -395,7 +395,7 @@ const saveVisitorToDB = async (qrData) => {
               </div>
               {photoMode==="file" && (
                 <label style={{ display:"flex", alignItems:"center", gap:10, background:T.surface2, border:`1.5px dashed ${T.border}`, borderRadius:10, padding:"14px 16px", cursor:"pointer" }}>
-                  <span style={{ fontSize:24 }}>🖼️</span>
+                  
                   <div>
                     <div style={{ fontSize:13, fontWeight:600, color:T.text }}>Click to upload passport photo</div>
                     <div style={{ fontSize:11, color:T.muted }}>JPG, PNG — max 5MB</div>
@@ -437,7 +437,7 @@ const saveVisitorToDB = async (qrData) => {
           <div style={card}>
             <div style={{ marginBottom:24 }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
-                <span style={{ background:"linear-gradient(135deg,#f59e0b,#ef4444)", borderRadius:8, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>🛡️</span>
+
                 <h3 style={{ fontSize:20, fontWeight:800, margin:0, color:T.text }}>Safety Training</h3>
               </div>
               <p style={{ color:T.muted, fontSize:12, marginLeft:42 }}>Select your department and complete safety training</p>
@@ -523,7 +523,7 @@ const saveVisitorToDB = async (qrData) => {
           <div style={card}>
             <div style={{ marginBottom:24 }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
-                <span style={{ background:"linear-gradient(135deg,#8b5cf6,#ec4899)", borderRadius:8, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>🧠</span>
+
                 <h3 style={{ fontSize:20, fontWeight:800, margin:0, color:T.text }}>Safety Quiz</h3>
               </div>
               <p style={{ color:T.muted, fontSize:12, marginLeft:42 }}>{dept.icon} {dept.name} — Answer all 4 questions (min 3/4 to pass)</p>
@@ -553,7 +553,7 @@ const saveVisitorToDB = async (qrData) => {
 
             {quizSubmitted && (
               <div style={{ background: quizScore>=3?T.success+"18":T.error+"18", border:`1px solid ${quizScore>=3?T.success:T.error}44`, borderRadius:12, padding:"16px 20px", marginBottom:16, textAlign:"center" }}>
-                <div style={{ fontSize:24, marginBottom:4 }}>{quizScore>=3?"🎉":"😔"}</div>
+                <div style={{ fontSize:24, marginBottom:4 }}>{quizScore>=3?"":""}</div>
                 <div style={{ fontSize:16, fontWeight:700, color:quizScore>=3?T.success:T.error }}>
                   {quizScore}/4 — {quizScore>=3?"Passed! Proceeding...":"Failed — Minimum 3/4 required"}
                 </div>
@@ -566,7 +566,7 @@ const saveVisitorToDB = async (qrData) => {
               {!quizSubmitted ? (
                 <button className="btn-p" style={{ flex:1 }} onClick={() => { if (Object.keys(quizAnswers).length<4) { alert("Answer all 4 questions"); return; } submitQuiz(); }}>Submit Quiz →</button>
               ) : quizScore < 3 ? (
-                <button className="btn-p" style={{ flex:1 }} onClick={() => { setQuizAnswers({}); setQuizSubmitted(false); }}>Retake Quiz 🔄</button>
+                <button className="btn-p" style={{ flex:1 }} onClick={() => { setQuizAnswers({}); setQuizSubmitted(false); }}>Retake Quiz</button>
               ) : null}
             </div>
           </div>
@@ -576,7 +576,6 @@ const saveVisitorToDB = async (qrData) => {
         {stage === 4 && (
           <div style={card}>
             <div style={{ textAlign:"center", marginBottom:28 }}>
-              <div style={{ fontSize:40, marginBottom:8 }}>🔐</div>
               <h3 style={{ fontSize:22, fontWeight:800, margin:0, background:`linear-gradient(135deg,${T.accent},${T.success})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Final Verification</h3>
               <p style={{ color:T.muted, fontSize:13, marginTop:6 }}>Generate and enter OTP to complete registration</p>
             </div>
@@ -599,7 +598,7 @@ const saveVisitorToDB = async (qrData) => {
             </div>
 
             {!otpSent ? (
-              <button className="btn-p" style={{ width:"100%", fontSize:15 }} onClick={sendOTP}>📱 Generate & Send OTP</button>
+              <button className="btn-p" style={{ width:"100%", fontSize:15 }} onClick={sendOTP}> Generate & Send OTP</button>
             ) : (
               <>
                 <p style={{ fontSize:13, color:T.muted, textAlign:"center", marginBottom:14 }}>Enter the 6-digit OTP sent to your registered phone</p>
@@ -627,7 +626,6 @@ const saveVisitorToDB = async (qrData) => {
         {stage === 5 && (
           <div style={{ background:T.surface, border:`1.5px solid ${T.success}44`, borderRadius:20, padding:"36px", boxShadow:`0 0 40px ${T.success}18` }}>
             <div style={{ textAlign:"center", marginBottom:28 }}>
-              <div style={{ fontSize:44, marginBottom:8 }}>🎉</div>
               <h2 style={{ fontSize:24, fontWeight:800, margin:0, background:`linear-gradient(135deg,${T.success},${T.accent})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Registration Complete!</h2>
               <p style={{ color:T.muted, fontSize:13, marginTop:6 }}>Your visitor pass has been generated. Show this QR at the gate.</p>
             </div>
@@ -670,7 +668,7 @@ const saveVisitorToDB = async (qrData) => {
             </div>
 
             <div style={{ display:"flex", gap:10, marginTop:20 }}>
-              <button className="btn-p" style={{ flex:1 }} onClick={() => window.print()}>🖨️ Print Pass</button>
+              <button className="btn-p" style={{ flex:1 }} onClick={() => window.print()}>Print Pass</button>
               <button className="btn-s" onClick={resetAll}>New Registration</button>
             </div>
           </div>

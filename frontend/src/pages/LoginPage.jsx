@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Added for navigation
+import { useState } from "react";
 
 const floatingOrbs = [
   { size: 300, x: 10, y: 15, color: "#a78bfa", delay: 0 },
@@ -364,7 +363,7 @@ function StrengthBar({ password }) {
   const colors = ["", "#ef4444", "#fb923c", "#facc15", "#34d399"];
   return (
     <div className="strength-wrap">
-      {[1, 2, 3, 4].map(i => (
+      {[1,2,3,4].map(i => (
         <div key={i} className="strength-seg" style={{ background: i <= score ? colors[score] : undefined }} />
       ))}
     </div>
@@ -378,7 +377,6 @@ export default function LoginPage({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [remember, setRemember] = useState(false);
-  const navigate = useNavigate(); // Hook for navigation
 
   const isAdmin = mode === "admin";
 
@@ -387,55 +385,23 @@ export default function LoginPage({ onLogin }) {
     setForm({ email: "", password: "", adminId: "" });
   };
 
-  // REAL AUTHENTICATION LOGIC INTEGRATED HERE
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     setLoading(true);
-    try {
-      // 1. Send data to Flask Backend
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-          adminId: form.adminId // Included if you want to verify this too
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // 2. SUCCESS: Show UI animation
-        setLoading(false);
-        setSuccess(true);
-
-        // 3. Store the secure token for the middleware to see later
-        localStorage.setItem('adminToken', data.token);
-
-        // 4. Wait for the animation before switching pages
-        setTimeout(() => {
-          if (onLogin) onLogin(isAdmin);
-          navigate(isAdmin ? '/admin/' : '/user/dashboard');
-        }, 1500);
-      } else {
-        // 5. FAILURE: Display the error message from MongoDB
-        setLoading(false);
-        alert(data.error || "Authentication Failed");
+    setTimeout(() => { 
+      setLoading(false); 
+      setSuccess(true);
+      if (onLogin) {
+        setTimeout(() => onLogin(isAdmin), 800);
       }
-    } catch (err) {
-      setLoading(false);
-      alert("Cannot connect to server. Ensure your Flask backend is running on port 5000.");
-    }
+    }, 1500);
   };
-
-  useEffect(() => { setSuccess(false); }, [mode]);
 
   return (
     <>
       <style>{getStyles(dark)}</style>
       <div className="login-root">
 
-        {/* Theme Toggle Button */}
+        {/* ── Theme Toggle Button ── */}
         <div className="theme-toggle">
           <button className="theme-btn theme-btn-dark" onClick={() => setDark(true)}>
             🌙 Dark
@@ -460,7 +426,6 @@ export default function LoginPage({ onLogin }) {
 
             {success && (
               <div className="success-overlay">
-                <div className="success-icon">{isAdmin ? "🛡️" : "✨"}</div>
                 <div className="success-title">{isAdmin ? "Admin Access Granted" : "Welcome Back!"}</div>
                 <div className="success-sub">{isAdmin ? "Redirecting to dashboard..." : "Logging you in..."}</div>
               </div>
@@ -468,20 +433,14 @@ export default function LoginPage({ onLogin }) {
 
             <div className="tab-bar">
               <button className={`tab-btn ${mode === "user" ? "active-user" : ""}`} onClick={() => handleSwitch("user")}>
-                👤 User
+                User
               </button>
               <button className={`tab-btn ${mode === "admin" ? "active-admin" : ""}`} onClick={() => handleSwitch("admin")}>
-                🛡️ Admin
+                Admin
               </button>
             </div>
 
-            <div style={{ textAlign: "center" }}>
-              <span className="secure-badge">
-                <span className="dot-green" />
-                256-bit SSL Encrypted
-              </span>
-            </div>
-
+        
             <div className="header" key={mode}>
               <div className={`icon-wrap ${isAdmin ? "icon-wrap-admin" : "icon-wrap-user"}`}>
                 {isAdmin ? "🛡️" : "👤"}
@@ -497,7 +456,6 @@ export default function LoginPage({ onLogin }) {
                 <div className="form-group">
                   <label className="form-label">Admin ID</label>
                   <div className="input-wrap">
-                    <span className="input-icon">🔑</span>
                     <input className="form-input admin-focus" placeholder="ADM-XXXXXXXX"
                       value={form.adminId} onChange={e => setForm({ ...form, adminId: e.target.value })} />
                   </div>
@@ -506,7 +464,6 @@ export default function LoginPage({ onLogin }) {
               <div className="form-group">
                 <label className="form-label">Email Address</label>
                 <div className="input-wrap">
-                  <span className="input-icon">✉️</span>
                   <input className={`form-input ${isAdmin ? "admin-focus" : ""}`} type="email"
                     placeholder={isAdmin ? "admin@company.com" : "you@example.com"}
                     value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
@@ -515,7 +472,6 @@ export default function LoginPage({ onLogin }) {
               <div className="form-group">
                 <label className="form-label">Password</label>
                 <div className="input-wrap">
-                  <span className="input-icon">🔒</span>
                   <input className={`form-input ${isAdmin ? "admin-focus" : ""}`} type="password"
                     placeholder="Enter your password"
                     value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
@@ -535,7 +491,7 @@ export default function LoginPage({ onLogin }) {
             <button className={`submit-btn ${isAdmin ? "submit-btn-admin" : "submit-btn-user"}`}
               onClick={handleSubmit} disabled={loading}>
               <span className="btn-shimmer" />
-              {loading ? "Authenticating..." : isAdmin ? "🛡️ Access Admin Panel" : "Sign In →"}
+              {loading ? "Authenticating..." : isAdmin ? "Access Admin Panel" : "Sign In →"}
             </button>
 
             {!isAdmin && (
@@ -565,3 +521,4 @@ export default function LoginPage({ onLogin }) {
     </>
   );
 }
+
