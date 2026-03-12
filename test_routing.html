@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Routing</title>
+</head>
+<body>
+    <h1>Test Login Routing</h1>
+    <p>The React app should be running at <a href="http://localhost:5174/" target="_blank">http://localhost:5174/</a></p>
+    <p>Expected behavior:</p>
+    <ul>
+        <li><strong>User Login</strong> (tab "User", any email/password) → Redirects to /visitor (VisitorForm)</li>
+        <li><strong>Admin Login</strong> (tab "Admin", any email/password) → Redirects to /admin (AdminDashboard)</li>
+        <li><strong>Secure Login</strong> (tab "Secure", email: superadmin@secure.com, password: Admin@1234) → Redirects to /verification (VerificationPage)</li>
+    </ul>
+    <p>Check browser console for any JavaScript errors.</p>
+</body>
+</html>
