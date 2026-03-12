@@ -3,6 +3,7 @@ from flask_cors import CORS
 from pymongo import MongoClient
 import sys
 import os
+import json
 
 # -------------------------------------------------
 # Ensure backend directory is in Python path
@@ -60,7 +61,7 @@ def save_visitor():
             "department": data.get("department"),
             "quizScore": data.get("quizScore"),
             "qrCode": data.get("qrCode"),
-            "photo": data.get("photo")   # ⭐ THIS LINE ADDED
+            "photo": data.get("photo")
         }
 
         result = visitors_collection.insert_one(visitor_data)
@@ -69,6 +70,53 @@ def save_visitor():
             "status": "success",
             "message": "Visitor saved successfully",
             "visitor_id": str(result.inserted_id)
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+# -------------------------------------------------
+# VERIFY QR CODE (Gate Scanner → MongoDB)
+# -------------------------------------------------
+@app.route("/verify-qr", methods=["POST"])
+def verify_qr():
+
+    try:
+        data = request.json
+        qr_raw = data.get("qr")
+
+        print("📷 QR RECEIVED:", qr_raw)
+
+        visitor_id = None
+
+        # Try parsing QR as JSON
+        try:
+            qr_data = json.loads(qr_raw)
+            visitor_id = qr_data.get("id")
+        except:
+            # If not JSON, assume raw value is visitorId
+            visitor_id = qr_raw
+
+        print("🔍 Visitor ID:", visitor_id)
+
+        visitor = visitors_collection.find_one({"visitorId": visitor_id})
+
+        if visitor:
+
+            visitor["_id"] = str(visitor["_id"])
+
+            return jsonify({
+                "status": "success",
+                "visitor": visitor
+            })
+
+        return jsonify({
+            "status": "error",
+            "message": "Visitor not found"
         })
 
     except Exception as e:

@@ -1,4 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import QRScanner from "../components/QRScanner";
+
+
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared theme (identical to VisitorForm)
@@ -66,138 +70,7 @@ function useJsQR() {
 // ─────────────────────────────────────────────────────────────────────────────
 // QR Scanner component — streams camera, decodes every 200ms
 // ─────────────────────────────────────────────────────────────────────────────
-function QRScanner({ onScan, active, T }) {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const streamRef = useRef(null);
-  const rafRef = useRef(null);
-  const jsQRReady = useJsQR();
-  const [camError, setCamError] = useState(null);
-  const [camStarted, setCamStarted] = useState(false);
-  const [scanning, setScanning] = useState(false);
 
-  const stopCam = useCallback(() => {
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null;
-    cancelAnimationFrame(rafRef.current);
-    setCamStarted(false);
-    setScanning(false);
-  }, []);
-
-  const startCam = useCallback(async () => {
-    setCamError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-      setCamStarted(true);
-      setScanning(true);
-    } catch (e) {
-      setCamError("Camera access denied or unavailable.");
-    }
-  }, []);
-
-  // Decode loop
-  useEffect(() => {
-    if (!camStarted || !jsQRReady || !scanning) return;
-    const tick = () => {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      if (!video || !canvas || video.readyState < 2) { rafRef.current = requestAnimationFrame(tick); return; }
-      const ctx = canvas.getContext("2d");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
-      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      try {
-        const code = window.jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
-        if (code) { setScanning(false); stopCam(); onScan(code.data); return; }
-      } catch {}
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [camStarted, jsQRReady, scanning, onScan, stopCam]);
-
-  useEffect(() => { if (!active) stopCam(); }, [active, stopCam]);
-  useEffect(() => () => stopCam(), [stopCam]);
-
-  return (
-    <div style={{ width: "100%", position: "relative" }}>
-      {/* Viewport */}
-      <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", background: "#000", aspectRatio: "4/3", border: `2px solid ${camStarted ? T.accent : T.border}`, boxShadow: camStarted ? `0 0 28px ${T.accent}33` : "none", transition: "border 0.3s, box-shadow 0.3s" }}>
-        <video ref={videoRef} playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", display: camStarted ? "block" : "none" }} />
-        <canvas ref={canvasRef} style={{ display: "none" }} />
-
-        {/* Idle state */}
-        {!camStarted && !camError && (
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, background: "linear-gradient(135deg,#0a1628,#111f36)" }}>
-            <div style={{ fontSize: 52 }}>📷</div>
-            <div style={{ fontSize: 14, color: "#94a3b8", fontWeight: 500 }}>Camera not started</div>
-            <button onClick={startCam} style={{ background: `linear-gradient(135deg,${T.accent},${T.accent2})`, border: "none", color: "white", borderRadius: 10, padding: "10px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-              Start Camera
-            </button>
-          </div>
-        )}
-
-        {/* Error state */}
-        {camError && (
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, background: "#0a1628" }}>
-            <div style={{ fontSize: 36 }}>⚠️</div>
-            <div style={{ fontSize: 13, color: T.error, textAlign: "center", padding: "0 16px" }}>{camError}</div>
-            <button onClick={startCam} style={{ background: T.error + "22", border: `1px solid ${T.error}`, color: T.error, borderRadius: 8, padding: "8px 18px", fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Retry</button>
-          </div>
-        )}
-
-        {/* Scanning overlay */}
-        {camStarted && scanning && (
-          <>
-            {/* Corner brackets */}
-            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-              <div style={{ position: "relative", width: "55%", height: "55%" }}>
-                {[["top:0,left:0","borderTop,borderLeft"], ["top:0,right:0","borderTop,borderRight"], ["bottom:0,left:0","borderBottom,borderLeft"], ["bottom:0,right:0","borderBottom,borderRight"]].map(([pos, borders], i) => {
-                  const [v, h] = pos.split(",");
-                  const [vp, vv] = v.split(":");
-                  const [hp, hv] = h.split(":");
-                  const bs = Object.fromEntries(borders.split(",").map(b => [b, `3px solid ${T.accent}`]));
-                  return <div key={i} style={{ position: "absolute", width: 24, height: 24, [vp]: vv, [hp]: hv, ...bs }} />;
-                })}
-                {/* Scan line */}
-                <div style={{ position: "absolute", left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${T.accent},transparent)`, animation: "scanLine 2s linear infinite", top: 0 }} />
-              </div>
-            </div>
-            {/* Status badge */}
-            <div style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", borderRadius: 20, padding: "5px 14px", display: "flex", alignItems: "center", gap: 7 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent, display: "inline-block", animation: "pulse 1.2s infinite" }} />
-              <span style={{ fontSize: 12, color: "#e2e8f0", fontWeight: 600 }}>Scanning for QR…</span>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Controls below scanner */}
-      <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-        {!camStarted ? (
-          <button onClick={startCam} disabled={!jsQRReady} style={{ flex: 1, background: jsQRReady ? `linear-gradient(135deg,${T.accent},${T.accent2})` : T.surface2, border: "none", color: jsQRReady ? "white" : T.muted, borderRadius: 10, padding: "11px", fontSize: 14, fontWeight: 700, cursor: jsQRReady ? "pointer" : "default", fontFamily: "inherit", transition: "all 0.2s" }}>
-            {jsQRReady ? "▶ Start Camera & Scan" : "Loading scanner…"}
-          </button>
-        ) : (
-          <button onClick={stopCam} style={{ flex: 1, background: T.error + "18", border: `1px solid ${T.error}44`, color: T.error, borderRadius: 10, padding: "11px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-            ⏹ Stop Camera
-          </button>
-        )}
-      </div>
-
-      {/* Manual input fallback */}
-      <ManualEntry onScan={onScan} T={T} />
-    </div>
-  );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Manual QR entry — for demo / testing without physical QR
@@ -369,7 +242,7 @@ function AccessGranted({ visitor, onReset, T }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {[
             { l: "Visitor ID", v: visitor.visitorId },
-            { l: "Department", v: DEPT_LABELS[visitor.dept] || visitor.dept },
+            { l: "Department", v: DEPT_LABELS[visitor.department] || visitor.department },
             { l: "Host", v: visitor.hostEmployee },
             { l: "Check-In", v: visitor.checkIn },
           ].map((r, i) => (
@@ -380,12 +253,12 @@ function AccessGranted({ visitor, onReset, T }) {
           ))}
         </div>
         <div style={{ marginTop: 12, padding: "8px 14px", background: T.success + "18", borderRadius: 8, border: `1px solid ${T.success}33` }}>
-          <span style={{ fontSize: 12, color: T.success, fontWeight: 700 }}>🕒 Entry logged at {new Date().toLocaleTimeString("en-IN")}</span>
+          <span style={{ fontSize: 12, color: T.success, fontWeight: 700 }}>Entry logged at {new Date().toLocaleTimeString("en-IN")}</span>
         </div>
       </div>
 
       <button onClick={onReset} style={{ width: "100%", background: `linear-gradient(135deg,${T.accent},${T.accent2})`, border: "none", color: "white", borderRadius: 12, padding: "13px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-        🔄 Scan Next Visitor
+        Scan Next Visitor
       </button>
     </div>
   );
@@ -407,27 +280,57 @@ export default function VerificationPage() {
 
   const transition = (step) => { setAnim(false); setTimeout(() => { setVStep(step); setAnim(true); }, 200); };
 
-  // Parse QR data and look up visitor
-  const handleScan = useCallback((raw) => {
-    setLookupError(null);
-    let id = raw.trim();
+const handleScan = useCallback(async (raw) => {
 
-    // Try parsing as JSON (from our QR generator)
+  console.log("RAW QR:", raw);
+
+  setLookupError(null);
+
+  try {
+
+    let visitorId = null;
+
+    // Try parsing QR JSON
     try {
-      const parsed = JSON.parse(raw);
-      id = parsed.id || parsed.visitorId || raw.trim();
-    } catch {}
-
-    // Look up in mock DB (replace with real API in production)
-    const found = MOCK_DB[id];
-    if (found) {
-      setScannedRaw(raw);
-      setVisitor(found);
-      transition("info");
-    } else {
-      setLookupError(`No visitor found for ID: "${id}". Try VIS-DEMO01 or VIS-DEMO02.`);
+      const parsed = JSON.parse(raw.trim());
+      visitorId = parsed.id;
+    } catch {
+      // If QR contains only visitorId
+      visitorId = raw.trim();
     }
-  }, []);
+
+    console.log("Visitor ID Extracted:", visitorId);
+
+    const res = await fetch("http://localhost:5000/verify-qr", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ qr: visitorId })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+
+      setVisitor(data.visitor);
+      setScannedRaw(raw);
+      transition("info");
+
+    } else {
+
+      setLookupError("Visitor not found in database");
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+    setLookupError("QR processing error");
+
+  }
+
+}, []);
 
   const reset = () => {
     setVisitor(null); setScannedRaw(null); setLookupError(null);
@@ -470,7 +373,6 @@ export default function VerificationPage() {
       {/* ── Page Header ── */}
       <div style={{ textAlign: "center", marginBottom: 28, position: "relative", zIndex: 1 }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: dark ? "rgba(56,189,248,0.09)" : "rgba(2,132,199,0.07)", border: `1px solid ${T.accent}33`, borderRadius: 40, padding: "6px 20px", marginBottom: 10 }}>
-          <span style={{ fontSize: 18 }}>🏭</span>
           <span style={{ fontSize: 11, fontWeight: 700, color: T.accent, letterSpacing: "0.12em", textTransform: "uppercase" }}>Smart Visitor · Gate Verification</span>
         </div>
         <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, color: T.text }}>Visitor Entry Verification</h1>
@@ -478,7 +380,7 @@ export default function VerificationPage() {
 
         {/* Step pills */}
         <div style={{ display: "inline-flex", gap: 6, marginTop: 14, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 40, padding: "5px 8px" }}>
-          {[["scan", "1. Scan QR", "📷"], ["info", "2. Verify Info", "🪪"], ["otp", "3. OTP Check", "🔐"], ["done", "4. Access", "✅"]].map(([step, label, icon]) => {
+          {[["scan", "1. Scan QR"], ["info", "2. Verify Info"], ["otp", "3. OTP Check"], ["done", "4. Access"]].map(([step, label, icon]) => {
             const steps = ["scan", "info", "otp", "done"];
             const idx = steps.indexOf(step), cur = steps.indexOf(vStep);
             const active = step === vStep, done = idx < cur;
@@ -518,10 +420,10 @@ export default function VerificationPage() {
             <div style={{ marginTop: 18, background: T.surface2, borderRadius: 12, padding: "14px 16px" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Instructions</div>
               {[
-                ["📱", "Ask visitor to open their QR pass on their phone"],
-                ["🎯", "Hold QR code steady within the green brackets"],
-                ["💡", "Ensure good lighting for faster detection"],
-                ["⌨", "Use manual entry below if camera unavailable"],
+                ["Ask visitor to open their QR pass on their phone"],
+                ["Hold QR code steady within the green brackets"],
+                ["Ensure good lighting for faster detection"],
+                ["Use manual entry below if camera unavailable"],
               ].map(([icon, text], i) => (
                 <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: i < 3 ? 8 : 0 }}>
                   <span style={{ fontSize: 15, flexShrink: 0 }}>{icon}</span>
@@ -544,7 +446,7 @@ export default function VerificationPage() {
                 <div style={{ fontSize: 12, color: T.muted, lineHeight: 1.6 }}>Visitor information will appear<br />here after QR code is scanned</div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%", maxWidth: 240 }}>
-                {[["📋", "Visitor details"], ["🏭", "Department & purpose"], ["⏱", "Check-in / check-out times"], ["📸", "Photo ID preview"]].map(([icon, text]) => (
+                {[["Visitor details"], ["Department & purpose"], ["Check-in / check-out times"], ["Photo ID preview"]].map(([icon, text]) => (
                   <div key={text} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: T.surface2, borderRadius: 8, border: `1px solid ${T.border}` }}>
                     <span style={{ fontSize: 15 }}>{icon}</span>
                     <span style={{ fontSize: 12, color: T.muted }}>{text}</span>
@@ -588,22 +490,30 @@ export default function VerificationPage() {
                 <InfoRow label="Check-Out" value={visitor.checkOut} T={T} mono />
               </div>
 
-              <InfoRow label="Department" value={DEPT_LABELS[visitor.dept] || visitor.dept} accent={T.accent2} T={T} />
+              <InfoRow label="Department" value={DEPT_LABELS[visitor.department] || visitor.department} accent={T.accent2} T={T} />
               <div style={{ marginTop: 8 }}>
                 <InfoRow label="Purpose of Visit" value={visitor.purpose} T={T} />
               </div>
 
               <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
                 <button onClick={reset} style={{ background: "transparent", border: `1.5px solid ${T.border}`, color: T.muted, borderRadius: 10, padding: "11px 20px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>← Rescan</button>
-                {visitor.status === "Approved" ? (
-                  <button onClick={() => transition("otp")} style={{ flex: 1, background: `linear-gradient(135deg,${T.accent},${T.accent2})`, border: "none", color: "white", borderRadius: 12, padding: "13px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                    Proceed to OTP Verification →
-                  </button>
-                ) : (
-                  <div style={{ flex: 1, background: T.error + "18", border: `1px solid ${T.error}33`, borderRadius: 12, padding: "13px", fontSize: 13, fontWeight: 700, color: T.error, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    ⛔ Access Denied — Visitor not approved
-                  </div>
-                )}
+                <button
+  onClick={() => transition("otp")}
+  style={{
+    flex: 1,
+    background: `linear-gradient(135deg,${T.accent},${T.accent2})`,
+    border: "none",
+    color: "white",
+    borderRadius: 12,
+    padding: "13px",
+    fontSize: 15,
+    fontWeight: 700,
+    cursor: "pointer",
+    fontFamily: "inherit"
+  }}
+>
+  Proceed to OTP Verification →
+</button>
               </div>
             </div>
           )}
